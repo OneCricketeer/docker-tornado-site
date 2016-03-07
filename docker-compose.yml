@@ -1,0 +1,63 @@
+version: '2'
+services:
+    elasticsearch:
+        image: "elasticsearch:latest"
+        ports:
+            - "9200:9200"
+            - "9300:9300"
+        volumes:
+            - "./elastic/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml"
+            - "./elastic/plugins/:/usr/share/elasticsearch/plugins/"
+    logstash:
+        image: "logstash:latest"
+        hostname: logstash
+        depends_on:
+            - elasticsearch
+        links:
+            - elasticsearch:elasticsearch
+        environment:
+            LOGSPOUT: ignore
+        ports:
+            - "5000:5000"
+            - "5000:5000/udp"
+        volumes:
+            - "./logstash/config:/etc/logstash/conf.d"
+            - "./logstash/patterns:/etc/logstash/patterns.d"
+        command: ["logstash", "-f", "/etc/logstash/conf.d"]
+    kibana:
+        image: "kibana:latest"
+        ports:
+            - "5601:5601"
+        depends_on:
+            - elasticsearch
+            - logstash
+        links:
+            - elasticsearch:elasticsearch
+        volumes:
+            - "./kibana/config/kibana.yml:/opt/kibana/config/kibana.yml"
+            - "./kibana/plugins:/opt/kibana/installedPlugins"
+    logspout:
+        image: "gliderlabs/logspout:master"
+        volumes:
+            - "/var/run/docker.sock:/tmp/docker.sock:ro"
+        environment:
+            DEBUG: "true"
+        depends_on:
+            - logstash
+        command: "syslog://logstash:5000"
+    tornadoapp:
+        build:
+            context: "./tornado-site"
+            dockerfile: Dockerfile
+    nginx:
+        image: "nginx:latest"
+        volumes:
+            - "./nginx/config/nginx.conf:/etc/nginx/nginx.conf"
+            - "./nginx/config/proxy_params:/etc/nginx/proxy_params"
+            - "./nginx/config/referral-spam.conf:/etc/nginx/conf.d/referral-spam.conf"
+            - "./tornado-site/static:/usr/share/nginx/html"
+            - "./nginx/config/tornado.conf:/etc/nginx/conf.d/default.conf"
+        links:
+            - "tornadoapp:tornado"
+        ports:
+            - "80:80"
