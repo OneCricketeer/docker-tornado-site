@@ -17,3 +17,8 @@ docker-compose up -d
   
   1. Navigate to Settings > Objects
   2. Import the `kibana-nginx-export.json` file in the `kibana` directory
+  3. Navigate to Dashboard tab and open the saved NGINX Dashboard
+
+Should see something close to this 
+
+![screen shot 2016-02-29 at 5 29 38 pm](https://cloud.githubusercontent.com/assets/1930631/13412609/251ed9b2-df0a-11e5-82e9-ddcf2098f2bb.png)
