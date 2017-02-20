@@ -7,6 +7,7 @@ services:
             - "9300:9300"
         environment:
             LOGSPOUT: ignore
+            ES_JAVA_OPTS: "-Xms512m -Xmx512m"
         volumes:
             - "./elastic/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml"
             - "./elastic/plugins/:/usr/share/elasticsearch/plugins/"
@@ -19,7 +20,7 @@ services:
             - elasticsearch:elasticsearch
         environment:
             LOGSPOUT: ignore
-            LS_HEAP_SIZE: 512m
+            LS_HEAP_SIZE: 100m
         ports:
             - "5000:5000"
             - "5000:5000/udp"
